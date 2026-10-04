@@ -1,0 +1,6 @@
+<% const avatarSize = locals.size || 'md'; %>
+<% if (user && user.avatar) { %>
+  <img class="avatar avatar-<%= avatarSize %>" src="<%= user.avatar %>" alt="" loading="lazy">
+<% } else { %>
+  <span class="avatar avatar-<%= avatarSize %>" style="background: <%= gradient(user ? user.email : '') %>" aria-hidden="true"><%= initials(user ? user.name : '?') %></span>
+<% } %>

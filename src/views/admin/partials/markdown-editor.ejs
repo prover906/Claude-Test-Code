@@ -1,0 +1,23 @@
+<%# Markdown textarea with a toolbar and live preview. Params: name, id, value, rows, placeholder %>
+<div class="md-editor" data-md-editor>
+  <div class="md-toolbar" role="toolbar" aria-label="Formatting">
+    <div class="md-tabs">
+      <button type="button" class="md-tab active" data-md-tab="write">Write</button>
+      <button type="button" class="md-tab" data-md-tab="preview">Preview</button>
+    </div>
+    <div class="md-actions" data-md-actions>
+      <button type="button" data-md="heading" title="Heading">H</button>
+      <button type="button" data-md="bold" title="Bold"><strong>B</strong></button>
+      <button type="button" data-md="italic" title="Italic"><em>I</em></button>
+      <button type="button" data-md="code" title="Inline code">&lt;/&gt;</button>
+      <button type="button" data-md="codeblock" title="Code block">{ }</button>
+      <button type="button" data-md="link" title="Link">Link</button>
+      <button type="button" data-md="image" title="Image">Img</button>
+      <button type="button" data-md="list" title="Bulleted list">• List</button>
+      <button type="button" data-md="quote" title="Quote">❝</button>
+    </div>
+  </div>
+  <textarea class="input md-input" name="<%= name %>" id="<%= id %>" rows="<%= locals.rows || 14 %>" placeholder="<%= locals.placeholder || '' %>" spellcheck="true"><%= value %></textarea>
+  <div class="md-preview prose" hidden></div>
+  <p class="field-hint">Formatting uses <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank" rel="noopener noreferrer">Markdown</a>. Fence code with ``` and a language name (```python) for syntax highlighting.</p>
+</div>

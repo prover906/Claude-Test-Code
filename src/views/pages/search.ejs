@@ -1,0 +1,80 @@
+<%- include('../partials/header') %>
+
+<section class="page-hero">
+  <div class="container narrow">
+    <h1>Search</h1>
+    <form class="search-big" method="get" action="/search" role="search">
+      <div class="input-icon">
+        <%- icon('search') %>
+        <input class="input input-lg" type="search" name="q" value="<%= q %>" placeholder="Try “python”, “flexbox” or “functions”" aria-label="Search" autofocus>
+      </div>
+      <button class="btn btn-primary btn-lg" type="submit">Search</button>
+    </form>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container narrow">
+    <% if (!q) { %>
+      <p class="muted center">Search across every published course, tutorial and chapter.</p>
+    <% } else if (!total) { %>
+      <div class="empty-state">
+        <%- icon('search', 'icon-xl') %>
+        <h3>No results for “<%= q %>”</h3>
+        <p class="muted">Check the spelling or try a more general term.</p>
+      </div>
+    <% } else { %>
+      <p class="muted result-count"><%= pluralize(total, 'result') %> for “<%= q %>”</p>
+
+      <% if (results.courses.length) { %>
+        <h2 class="search-group">Courses</h2>
+        <div class="search-results">
+          <% results.courses.forEach(function (course) { %>
+            <a class="search-result" href="/courses/<%= course.slug %>">
+              <span class="search-result-icon"><%- icon('cap') %></span>
+              <span>
+                <strong><%= course.title %></strong>
+                <span class="muted small"><%= course.category %> · <%= course.level %> · <%= pluralize(course.lesson_count, 'lesson') %></span>
+                <span class="search-snippet"><%= truncate(course.summary, 160) %></span>
+              </span>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <% if (results.tutorials.length) { %>
+        <h2 class="search-group">Tutorials</h2>
+        <div class="search-results">
+          <% results.tutorials.forEach(function (tutorial) { %>
+            <a class="search-result" href="/tutorials/<%= tutorial.slug %>">
+              <span class="search-result-icon"><%- icon('book') %></span>
+              <span>
+                <strong><%= tutorial.title %></strong>
+                <span class="muted small"><%= pluralize(tutorial.chapter_count, 'chapter') %></span>
+                <span class="search-snippet"><%= truncate(tutorial.description, 160) %></span>
+              </span>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <% if (results.chapters.length) { %>
+        <h2 class="search-group">Tutorial chapters</h2>
+        <div class="search-results">
+          <% results.chapters.forEach(function (chapter) { %>
+            <a class="search-result" href="/tutorials/<%= chapter.tutorial_slug %>/<%= chapter.slug %>">
+              <span class="search-result-icon"><%- icon('file') %></span>
+              <span>
+                <strong><%= chapter.title %></strong>
+                <span class="muted small"><%= chapter.tutorial_title %></span>
+                <span class="search-snippet"><%= chapter.snippet %></span>
+              </span>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,58 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <nav class="breadcrumbs">
+      <a href="/admin/tutorials">Tutorials</a> <%- icon('chevron-right', 'icon-xs') %>
+      <a href="/admin/tutorials/<%= tutorial.id %>/edit#chapters"><%= tutorial.title %></a> <%- icon('chevron-right', 'icon-xs') %>
+      <span><%= chapter ? 'Edit chapter' : 'New chapter' %></span>
+    </nav>
+    <h1><%= chapter ? chapter.title : 'New chapter' %></h1>
+  </div>
+  <% if (chapter) { %>
+    <div class="admin-page-actions">
+      <a class="btn btn-secondary" href="/tutorials/<%= tutorial.slug %>/<%= chapter.slug %>" target="_blank" rel="noopener"><%- icon('eye') %> View chapter</a>
+    </div>
+  <% } %>
+</div>
+
+<% if (Object.keys(errors).length) { %>
+  <div class="alert alert-error" role="alert"><%- icon('alert') %> <span>Please fix the highlighted fields and try again.</span></div>
+<% } %>
+
+<form class="form editor-layout" method="post" action="/admin/tutorials/<%= tutorial.id %>/chapters<%= chapter ? '/' + chapter.id : '' %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="editor-main card card-pad">
+    <div class="field <%= errors.title ? 'has-error' : '' %>">
+      <label for="title">Chapter title</label>
+      <input class="input input-lg" id="title" name="title" required maxlength="150" value="<%= values.title %>" placeholder="e.g. Variables and data types" data-slug-source>
+      <% if (errors.title) { %><p class="field-error"><%= errors.title %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="slug">URL slug</label>
+      <div class="input-prefix"><span>/tutorials/<%= tutorial.slug %>/</span><input class="input" id="slug" name="slug" maxlength="100" value="<%= values.slug %>" placeholder="generated-from-title" data-slug-target <%= chapter ? 'data-slug-locked' : '' %>></div>
+    </div>
+    <div class="field <%= errors.content ? 'has-error' : '' %>">
+      <label for="content">Content</label>
+      <%- include('../partials/markdown-editor', { name: 'content', id: 'content', value: values.content, rows: 24, placeholder: 'Write the chapter in Markdown…' }) %>
+      <% if (errors.content) { %><p class="field-error"><%= errors.content %></p><% } %>
+    </div>
+  </div>
+  <aside class="editor-side">
+    <div class="card card-pad">
+      <h3>Tips</h3>
+      <ul class="tips">
+        <li>Use <code>##</code> headings to break the chapter into sections.</li>
+        <li>Add a language after the opening <code>```</code> for syntax highlighting.</li>
+        <li>Need images? Upload them in the <a href="/admin/media" target="_blank" rel="noopener">Media library</a> and paste the link.</li>
+      </ul>
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" type="submit"><%= chapter ? 'Save chapter' : 'Add chapter' %></button>
+    <% if (!chapter) { %>
+      <button class="btn btn-secondary btn-block" type="submit" name="after" value="another">Add &amp; write another</button>
+    <% } %>
+    <a class="btn btn-ghost btn-block" href="/admin/tutorials/<%= tutorial.id %>/edit#chapters">Cancel</a>
+  </aside>
+</form>
+
+<%- include('../partials/footer') %>

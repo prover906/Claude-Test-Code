@@ -1,0 +1,70 @@
+<%- include('../../partials/header', { bodyClass: 'page-tutorial' }) %>
+
+<div class="container tutorial-layout">
+  <aside class="tutorial-sidebar">
+    <button type="button" class="btn btn-secondary btn-block chapter-toggle" data-chapter-toggle aria-expanded="false" aria-controls="chapter-nav">
+      <%- icon('menu') %> Chapters
+    </button>
+    <nav class="chapter-nav" id="chapter-nav" aria-label="<%= tutorial.title %> chapters">
+      <a class="chapter-nav-title" href="/tutorials/<%= tutorial.slug %>">
+        <span class="tutorial-badge tutorial-badge-sm" style="background: <%= gradient(tutorial.slug) %>"><%= tutorial.badge || tutorial.title.slice(0, 2) %></span>
+        <%= tutorial.title %>
+      </a>
+      <ol>
+        <% chapters.forEach(function (item, i) { %>
+          <li>
+            <a href="/tutorials/<%= tutorial.slug %>/<%= item.slug %>" class="<%= chapter && chapter.id === item.id ? 'active' : '' %>" <% if (chapter && chapter.id === item.id) { %>aria-current="page"<% } %>>
+              <span class="num"><%= i + 1 %></span> <%= item.title %>
+            </a>
+          </li>
+        <% }) %>
+      </ol>
+    </nav>
+  </aside>
+
+  <article class="tutorial-main">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/tutorials">Tutorials</a> <%- icon('chevron-right', 'icon-xs') %>
+      <a href="/tutorials/<%= tutorial.slug %>"><%= tutorial.title %></a>
+    </nav>
+    <% if (!tutorial.is_published) { %>
+      <div class="alert alert-warning inline-alert"><%- icon('eye-off') %> <span>This tutorial is a <strong>draft</strong>. Only admins can see it.</span></div>
+    <% } %>
+
+    <% if (chapter) { %>
+      <header class="chapter-head">
+        <span class="eyebrow">Chapter <%= index + 1 %> of <%= chapters.length %></span>
+        <h1><%= chapter.title %></h1>
+        <p class="muted small">Last updated <%= formatDate(chapter.updated_at) %>
+          <% if (locals.isAdmin) { %> · <a href="/admin/tutorials/<%= tutorial.id %>/chapters/<%= chapter.id %>/edit"><%- icon('edit', 'icon-xs') %> Edit chapter</a><% } %>
+        </p>
+      </header>
+      <div class="prose"><%- contentHtml %></div>
+
+      <nav class="pager" aria-label="Chapter navigation">
+        <% if (prev) { %>
+          <a class="pager-link" href="/tutorials/<%= tutorial.slug %>/<%= prev.slug %>">
+            <span class="muted small"><%- icon('arrow-left', 'icon-xs') %> Previous</span>
+            <strong><%= prev.title %></strong>
+          </a>
+        <% } else { %><span></span><% } %>
+        <% if (next) { %>
+          <a class="pager-link pager-next" href="/tutorials/<%= tutorial.slug %>/<%= next.slug %>">
+            <span class="muted small">Next <%- icon('arrow-right', 'icon-xs') %></span>
+            <strong><%= next.title %></strong>
+          </a>
+        <% } %>
+      </nav>
+    <% } else { %>
+      <h1><%= tutorial.title %></h1>
+      <p class="lead"><%= tutorial.description %></p>
+      <div class="empty-state">
+        <%- icon('file', 'icon-xl') %>
+        <h3>No chapters yet</h3>
+        <p class="muted">Check back soon. New chapters are on the way.</p>
+      </div>
+    <% } %>
+  </article>
+</div>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,44 @@
+<%- include('../../partials/header', { bodyClass: 'page-auth' }) %>
+
+<section class="auth-wrap">
+  <div class="auth-card card">
+    <div class="auth-head">
+      <span class="brand-mark brand-mark-lg"><%- icon('code') %></span>
+      <h1>Create your account</h1>
+      <p class="muted">Free forever. Enroll in courses and track your progress.</p>
+    </div>
+
+    <form method="post" action="/signup" class="form" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="next" value="<%= next %>">
+      <div class="field <%= errors.name ? 'has-error' : '' %>">
+        <label for="name">Full name</label>
+        <input class="input" id="name" name="name" autocomplete="name" required maxlength="80" value="<%= values.name || '' %>">
+        <% if (errors.name) { %><p class="field-error"><%= errors.name %></p><% } %>
+      </div>
+      <div class="field <%= errors.email ? 'has-error' : '' %>">
+        <label for="email">Email</label>
+        <input class="input" id="email" name="email" type="email" autocomplete="email" required value="<%= values.email || '' %>">
+        <% if (errors.email) { %><p class="field-error"><%= errors.email %></p><% } %>
+      </div>
+      <div class="field <%= errors.password ? 'has-error' : '' %>">
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input class="input" id="password" name="password" type="password" autocomplete="new-password" required minlength="8">
+          <button type="button" class="icon-btn" data-toggle-password aria-label="Show password"><%- icon('eye') %></button>
+        </div>
+        <% if (errors.password) { %><p class="field-error"><%= errors.password %></p><% } else { %><p class="field-hint">At least 8 characters, with a letter and a number.</p><% } %>
+      </div>
+      <div class="field <%= errors.confirm ? 'has-error' : '' %>">
+        <label for="confirm">Confirm password</label>
+        <input class="input" id="confirm" name="confirm" type="password" autocomplete="new-password" required>
+        <% if (errors.confirm) { %><p class="field-error"><%= errors.confirm %></p><% } %>
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" type="submit">Create account</button>
+    </form>
+
+    <p class="auth-switch">Already have an account? <a href="/login<%= next ? `?next=${encodeURIComponent(next)}` : '' %>">Sign in</a></p>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

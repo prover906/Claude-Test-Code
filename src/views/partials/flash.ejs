@@ -1,0 +1,12 @@
+<% const messages = locals.flash || []; %>
+<% if (messages.length) { %>
+  <div class="flash-stack container" role="status" aria-live="polite">
+    <% messages.forEach(function (item) { %>
+      <div class="alert alert-<%= item.type %>" data-dismissible>
+        <%- icon(item.type === 'success' ? 'check-circle' : item.type === 'error' ? 'alert' : 'info') %>
+        <span><%= item.message %></span>
+        <button type="button" class="alert-close" data-dismiss aria-label="Dismiss"><%- icon('x') %></button>
+      </div>
+    <% }) %>
+  </div>
+<% } %>

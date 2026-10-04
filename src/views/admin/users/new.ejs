@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <nav class="breadcrumbs"><a href="/admin/users">Users</a> <%- icon('chevron-right', 'icon-xs') %> <span>Add user</span></nav>
+    <h1>Add a user</h1>
+    <p class="muted">Create an account for a student or another administrator.</p>
+  </div>
+</div>
+
+<div class="card card-pad form-card">
+  <form class="form" method="post" action="/admin/users" novalidate>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field <%= errors.name ? 'has-error' : '' %>">
+      <label for="name">Full name</label>
+      <input class="input" id="name" name="name" required maxlength="80" value="<%= values.name %>">
+      <% if (errors.name) { %><p class="field-error"><%= errors.name %></p><% } %>
+    </div>
+    <div class="field <%= errors.email ? 'has-error' : '' %>">
+      <label for="email">Email</label>
+      <input class="input" id="email" name="email" type="email" required value="<%= values.email %>">
+      <% if (errors.email) { %><p class="field-error"><%= errors.email %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="role">Role</label>
+      <select class="input" id="role" name="role">
+        <option value="student" <%= values.role === 'student' ? 'selected' : '' %>>Student: can enroll in courses</option>
+        <option value="admin" <%= values.role === 'admin' ? 'selected' : '' %>>Admin: full access to this dashboard</option>
+      </select>
+    </div>
+    <div class="field <%= errors.password ? 'has-error' : '' %>">
+      <label for="password">Password</label>
+      <div class="password-field">
+        <input class="input" id="password" name="password" type="text" required minlength="8" autocomplete="new-password" data-password-output>
+        <button type="button" class="btn btn-secondary btn-sm" data-generate-password>Generate</button>
+      </div>
+      <% if (errors.password) { %><p class="field-error"><%= errors.password %></p><% } else { %><p class="field-hint">Share it with the user securely. They can change it in their account settings.</p><% } %>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Create user</button>
+      <a class="btn btn-ghost" href="/admin/users">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

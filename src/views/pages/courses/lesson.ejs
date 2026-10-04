@@ -1,0 +1,121 @@
+<%- include('../../partials/header', { bodyClass: 'page-lesson' }) %>
+<%
+  const doneCount = lessons.filter(function (l) { return completed.has(l.id); }).length;
+  const progress = percent(doneCount, lessons.length);
+  const isDone = completed.has(lesson.id);
+%>
+
+<div class="container lesson-layout">
+  <div class="lesson-main">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/courses">Courses</a> <%- icon('chevron-right', 'icon-xs') %>
+      <a href="/courses/<%= course.slug %>"><%= course.title %></a> <%- icon('chevron-right', 'icon-xs') %>
+      <span>Lesson <%= index + 1 %></span>
+    </nav>
+
+    <% if (embedUrl) { %>
+      <div class="player">
+        <iframe src="<%= embedUrl %>" title="<%= lesson.title %>" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+    <% } else if (videoSrc) { %>
+      <div class="player">
+        <video controls preload="metadata" playsinline controlsList="nodownload" src="<%= videoSrc %>">
+          Your browser can't play this video.
+        </video>
+      </div>
+    <% } %>
+
+    <div class="lesson-head">
+      <div>
+        <span class="eyebrow">Lesson <%= index + 1 %> of <%= lessons.length %><% if (lesson.duration) { %> · <%= lesson.duration %><% } %></span>
+        <h1><%= lesson.title %></h1>
+      </div>
+      <% if (currentUser) { %>
+        <form method="post" action="/courses/<%= course.slug %>/lessons/<%= lesson.id %>/complete">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <% if (isDone) { %>
+            <input type="hidden" name="complete" value="0">
+            <button class="btn btn-success-soft" type="submit" title="Click to mark as not completed"><%- icon('check-circle') %> Completed</button>
+          <% } else { %>
+            <input type="hidden" name="complete" value="1">
+            <button class="btn btn-primary" type="submit"><%- icon('check') %> Mark as complete</button>
+          <% } %>
+        </form>
+      <% } else { %>
+        <a class="btn btn-secondary" href="/login?next=<%= encodeURIComponent('/courses/' + course.slug) %>">Sign in to track progress</a>
+      <% } %>
+    </div>
+
+    <% if (lesson.resource_file) { %>
+      <a class="resource-link" href="/courses/<%= course.slug %>/lessons/<%= lesson.id %>/resource">
+        <span class="resource-icon"><%- icon('download') %></span>
+        <span><strong>Download resources</strong><span class="muted small"><%= lesson.resource_name %></span></span>
+      </a>
+    <% } %>
+
+    <% if (contentHtml) { %>
+      <article class="prose lesson-notes"><%- contentHtml %></article>
+    <% } %>
+
+    <nav class="pager" aria-label="Lesson navigation">
+      <% if (prev) { %>
+        <a class="pager-link" href="/courses/<%= course.slug %>/lessons/<%= prev.id %>">
+          <span class="muted small"><%- icon('arrow-left', 'icon-xs') %> Previous</span>
+          <strong><%= prev.title %></strong>
+        </a>
+      <% } else { %><span></span><% } %>
+      <% if (next) { %>
+        <a class="pager-link pager-next" href="/courses/<%= course.slug %>/lessons/<%= next.id %>">
+          <span class="muted small">Next <%- icon('arrow-right', 'icon-xs') %></span>
+          <strong><%= next.title %></strong>
+        </a>
+      <% } %>
+    </nav>
+  </div>
+
+  <aside class="lesson-sidebar">
+    <div class="card playlist">
+      <div class="playlist-head">
+        <a href="/courses/<%= course.slug %>" class="playlist-title"><%= course.title %></a>
+        <% if (enrolled) { %>
+          <div class="progress progress-sm" role="progressbar" aria-valuenow="<%= progress %>" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress"><span style="width: <%= progress %>%"></span></div>
+          <span class="muted small"><%= doneCount %>/<%= lessons.length %> completed · <%= progress %>%</span>
+        <% } else { %>
+          <span class="muted small"><%= pluralize(lessons.length, 'lesson') %></span>
+        <% } %>
+      </div>
+      <ol class="playlist-items">
+        <% lessons.forEach(function (item, i) {
+             const unlocked = canWatchLesson(item); %>
+          <li>
+            <% if (unlocked) { %>
+              <a href="/courses/<%= course.slug %>/lessons/<%= item.id %>" class="<%= item.id === lesson.id ? 'current' : '' %> <%= completed.has(item.id) ? 'done' : '' %>" <% if (item.id === lesson.id) { %>aria-current="page"<% } %>>
+            <% } else { %>
+              <span class="locked">
+            <% } %>
+                <span class="playlist-status">
+                  <% if (completed.has(item.id)) { %><%- icon('check-circle', 'icon-sm') %><% } else if (!unlocked) { %><%- icon('lock', 'icon-sm') %><% } else if (item.id === lesson.id) { %><%- icon('play-circle', 'icon-sm') %><% } else { %><span class="num"><%= i + 1 %></span><% } %>
+                </span>
+                <span class="playlist-text">
+                  <%= item.title %>
+                  <% if (item.duration) { %><small><%= item.duration %></small><% } %>
+                </span>
+            <% if (unlocked) { %></a><% } else { %></span><% } %>
+          </li>
+        <% }) %>
+      </ol>
+      <% if (!enrolled && currentUser && !locals.isAdmin) { %>
+        <form class="playlist-foot" method="post" action="/courses/<%= course.slug %>/enroll">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn-primary btn-block" type="submit">Enroll to unlock all lessons</button>
+        </form>
+      <% } else if (!currentUser) { %>
+        <div class="playlist-foot">
+          <a class="btn btn-primary btn-block" href="/login?next=<%= encodeURIComponent('/courses/' + course.slug) %>">Sign in to unlock all lessons</a>
+        </div>
+      <% } %>
+    </div>
+  </aside>
+</div>
+
+<%- include('../../partials/footer') %>

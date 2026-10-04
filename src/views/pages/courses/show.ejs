@@ -1,0 +1,119 @@
+<%- include('../../partials/header') %>
+<%
+  const doneCount = lessons.filter(function (l) { return completed.has(l.id); }).length;
+  const progress = percent(doneCount, lessons.length);
+%>
+
+<section class="course-hero">
+  <div class="container course-hero-grid">
+    <div>
+      <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/courses">Courses</a> <%- icon('chevron-right', 'icon-xs') %> <span><%= course.category %></span></nav>
+      <% if (!course.is_published) { %>
+        <div class="alert alert-warning inline-alert"><%- icon('eye-off') %> <span>This course is a <strong>draft</strong>. Only admins can see it.</span></div>
+      <% } %>
+      <h1><%= course.title %></h1>
+      <p class="lead"><%= course.summary %></p>
+      <div class="course-facts">
+        <span class="chip chip-<%= course.level.toLowerCase() %>"><%- icon('signal', 'icon-xs') %> <%= course.level %></span>
+        <span><%- icon('play-circle', 'icon-sm') %> <%= pluralize(lessons.length, 'lesson') %></span>
+        <span><%- icon('users', 'icon-sm') %> <%= pluralize(course.enrollment_count, 'learner') %></span>
+        <span><%- icon('calendar', 'icon-sm') %> Updated <%= formatDate(course.updated_at) %></span>
+      </div>
+    </div>
+
+    <aside class="card enroll-card">
+      <div class="course-thumb"><%- include('../../partials/course-thumb', { course }) %></div>
+      <div class="card-body">
+        <% if (enrolled) { %>
+          <div class="progress-label"><span>Your progress</span><strong><%= progress %>%</strong></div>
+          <div class="progress" role="progressbar" aria-valuenow="<%= progress %>" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress"><span style="width: <%= progress %>%"></span></div>
+          <p class="muted small"><%= doneCount %> of <%= pluralize(lessons.length, 'lesson') %> completed</p>
+          <% if (nextLesson) { %>
+            <a class="btn btn-primary btn-block btn-lg" href="/courses/<%= course.slug %>/lessons/<%= nextLesson.id %>">
+              <%- icon('play') %> <%= doneCount ? (progress === 100 ? 'Watch again' : 'Continue learning') : 'Start course' %>
+            </a>
+          <% } %>
+        <% } else if (currentUser) { %>
+          <p class="price">Free</p>
+          <form method="post" action="/courses/<%= course.slug %>/enroll">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-primary btn-block btn-lg" type="submit"><%- icon('zap') %> Enroll now, it's free</button>
+          </form>
+        <% } else { %>
+          <p class="price">Free</p>
+          <a class="btn btn-primary btn-block btn-lg" href="/login?next=<%= encodeURIComponent('/courses/' + course.slug) %>">Sign in to enroll</a>
+          <p class="muted small center">New here? <a href="/signup?next=<%= encodeURIComponent('/courses/' + course.slug) %>">Create a free account</a></p>
+        <% } %>
+        <ul class="check-list">
+          <li><%- icon('check') %> Lifetime access</li>
+          <li><%- icon('check') %> Lesson notes & source code</li>
+          <li><%- icon('check') %> Progress tracking</li>
+        </ul>
+        <% if (locals.isAdmin) { %>
+          <a class="btn btn-secondary btn-block" href="/admin/courses/<%= course.id %>/edit"><%- icon('edit') %> Edit course</a>
+        <% } %>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container course-body">
+    <div>
+      <h2>About this course</h2>
+      <div class="prose"><%- descriptionHtml %></div>
+
+      <h2 id="curriculum">Course content</h2>
+      <% if (lessons.length) { %>
+        <ol class="lesson-list">
+          <% lessons.forEach(function (lesson, i) {
+               const unlocked = lesson.is_preview || enrolled || locals.isAdmin;
+               const done = completed.has(lesson.id); %>
+            <li class="<%= done ? 'is-done' : '' %>">
+              <span class="lesson-index"><% if (done) { %><%- icon('check') %><% } else { %><%= i + 1 %><% } %></span>
+              <span class="lesson-info">
+                <% if (unlocked) { %>
+                  <a href="/courses/<%= course.slug %>/lessons/<%= lesson.id %>"><%= lesson.title %></a>
+                <% } else { %>
+                  <span><%= lesson.title %></span>
+                <% } %>
+                <span class="lesson-sub">
+                  <% if (lesson.video_type !== 'none') { %><%- icon('video', 'icon-xs') %> Video<% } else { %><%- icon('file', 'icon-xs') %> Reading<% } %>
+                  <% if (lesson.resource_file) { %> · <%- icon('download', 'icon-xs') %> Resources<% } %>
+                </span>
+              </span>
+              <span class="lesson-end">
+                <% if (lesson.is_preview && !enrolled) { %><span class="badge badge-primary">Preview</span><% } %>
+                <% if (lesson.duration) { %><span class="muted small"><%= lesson.duration %></span><% } %>
+                <% if (!unlocked) { %><span class="muted" title="Enroll to unlock"><%- icon('lock', 'icon-sm') %></span><% } %>
+              </span>
+            </li>
+          <% }) %>
+        </ol>
+      <% } else { %>
+        <p class="muted">Lessons are coming soon.</p>
+      <% } %>
+    </div>
+    <aside class="course-side">
+      <div class="card card-pad">
+        <h3>Instructor</h3>
+        <div class="instructor">
+          <span class="avatar avatar-md" style="background: <%= gradient(course.author_name || siteName) %>"><%= initials(course.author_name || siteName) %></span>
+          <div>
+            <strong><%= course.author_name || `${siteName} team` %></strong>
+            <span class="muted small">Course author</span>
+          </div>
+        </div>
+      </div>
+      <% if (enrolled) { %>
+        <form method="post" action="/courses/<%= course.slug %>/unenroll" data-confirm="Leave this course? Your progress is kept if you re-enroll.">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="returnTo" value="/courses/<%= course.slug %>">
+          <button class="btn btn-ghost btn-sm" type="submit">Leave course</button>
+        </form>
+      <% } %>
+    </aside>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,124 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <nav class="breadcrumbs"><a href="/admin/users">Users</a> <%- icon('chevron-right', 'icon-xs') %> <span><%= user.name %></span></nav>
+    <h1>Manage user</h1>
+  </div>
+</div>
+
+<div class="user-layout">
+  <aside class="card card-pad profile-card">
+    <%- include('../../partials/avatar', { user, size: 'xl' }) %>
+    <h2><%= user.name %></h2>
+    <p class="muted"><%= user.email %></p>
+    <div class="chip-row center">
+      <span class="badge <%= user.role === 'admin' ? 'badge-primary' : '' %>"><%= user.role === 'admin' ? 'Admin' : 'Student' %></span>
+      <span class="badge <%= user.status === 'active' ? 'badge-success' : 'badge-danger' %>"><%= user.status === 'active' ? 'Active' : 'Banned' %></span>
+    </div>
+    <% if (user.bio) { %><p class="profile-bio"><%= user.bio %></p><% } %>
+    <dl class="profile-facts">
+      <div><dt>Joined</dt><dd><%= formatDate(user.created_at) %></dd></div>
+      <div><dt>Last sign-in</dt><dd><%= timeAgo(user.last_login_at) %></dd></div>
+      <div><dt>Courses</dt><dd><%= enrollments.length %></dd></div>
+    </dl>
+  </aside>
+
+  <div class="user-main">
+    <section class="card card-pad">
+      <h2>Profile & access</h2>
+      <% if (Object.keys(errors).length) { %>
+        <div class="alert alert-error" role="alert"><%- icon('alert') %> <span>Please fix the highlighted fields.</span></div>
+      <% } %>
+      <form class="form" method="post" action="/admin/users/<%= user.id %>" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field-row">
+          <div class="field <%= errors.name ? 'has-error' : '' %>">
+            <label for="name">Full name</label>
+            <input class="input" id="name" name="name" required maxlength="80" value="<%= values.name %>">
+            <% if (errors.name) { %><p class="field-error"><%= errors.name %></p><% } %>
+          </div>
+          <div class="field <%= errors.email ? 'has-error' : '' %>">
+            <label for="email">Email</label>
+            <input class="input" id="email" name="email" type="email" required value="<%= values.email %>">
+            <% if (errors.email) { %><p class="field-error"><%= errors.email %></p><% } %>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field <%= errors.role ? 'has-error' : '' %>">
+            <label for="role">Role</label>
+            <select class="input" id="role" name="role" <%= isSelf ? 'disabled' : '' %>>
+              <option value="student" <%= values.role === 'student' ? 'selected' : '' %>>Student</option>
+              <option value="admin" <%= values.role === 'admin' ? 'selected' : '' %>>Admin</option>
+            </select>
+            <% if (isSelf) { %><input type="hidden" name="role" value="admin"><p class="field-hint">You can’t change your own role.</p><% } %>
+            <% if (errors.role) { %><p class="field-error"><%= errors.role %></p><% } %>
+          </div>
+          <div class="field <%= errors.status ? 'has-error' : '' %>">
+            <label for="status">Status</label>
+            <select class="input" id="status" name="status" <%= isSelf ? 'disabled' : '' %>>
+              <option value="active" <%= values.status === 'active' ? 'selected' : '' %>>Active: can sign in</option>
+              <option value="banned" <%= values.status === 'banned' ? 'selected' : '' %>>Banned: blocked from signing in</option>
+            </select>
+            <% if (isSelf) { %><input type="hidden" name="status" value="active"><% } %>
+            <% if (errors.status) { %><p class="field-error"><%= errors.status %></p><% } %>
+          </div>
+        </div>
+        <div class="field">
+          <label for="bio">Bio</label>
+          <textarea class="input" id="bio" name="bio" rows="2" maxlength="500"><%= values.bio %></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Save changes</button>
+      </form>
+    </section>
+
+    <section class="card card-pad">
+      <h2>Reset password</h2>
+      <p class="muted small">Sets a new password and signs the user out of every device.</p>
+      <form class="form" method="post" action="/admin/users/<%= user.id %>/password" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field <%= passwordErrors.password ? 'has-error' : '' %>">
+          <label for="new-password">New password</label>
+          <div class="password-field">
+            <input class="input" id="new-password" name="password" type="text" required minlength="8" autocomplete="new-password" data-password-output>
+            <button type="button" class="btn btn-secondary btn-sm" data-generate-password>Generate</button>
+          </div>
+          <% if (passwordErrors.password) { %><p class="field-error"><%= passwordErrors.password %></p><% } %>
+        </div>
+        <button class="btn btn-secondary" type="submit"><%- icon('key', 'icon-sm') %> Set new password</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Enrolled courses</h2></div>
+      <% if (enrollments.length) { %>
+        <ul class="enroll-list">
+          <% enrollments.forEach(function (course) { const p = percent(course.completed_count, course.lesson_count); %>
+            <li>
+              <a href="/admin/courses/<%= course.id %>/edit"><%= course.title %></a>
+              <div class="progress progress-sm" role="progressbar" aria-valuenow="<%= p %>" aria-valuemin="0" aria-valuemax="100" aria-label="Progress in <%= course.title %>"><span style="width: <%= p %>%"></span></div>
+              <span class="muted small nowrap"><%= course.completed_count %>/<%= course.lesson_count %> · <%= p %>%</span>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p class="muted card-pad">Not enrolled in any courses yet.</p>
+      <% } %>
+    </section>
+
+    <% if (!isSelf) { %>
+      <section class="card card-pad danger-zone">
+        <div>
+          <h2>Delete user</h2>
+          <p class="muted">Permanently deletes the account, enrollments and progress.</p>
+        </div>
+        <form method="post" action="/admin/users/<%= user.id %>/delete" data-confirm="Permanently delete <%= user.name %>? This can't be undone.">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn-danger" type="submit"><%- icon('trash') %> Delete user</button>
+        </form>
+      </section>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

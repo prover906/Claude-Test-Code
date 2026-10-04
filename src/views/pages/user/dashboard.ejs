@@ -1,0 +1,62 @@
+<%- include('../../partials/header') %>
+
+<section class="page-hero page-hero-sm">
+  <div class="container dash-hero">
+    <%- include('../../partials/avatar', { user: currentUser, size: 'lg' }) %>
+    <div>
+      <h1>Hi, <%= currentUser.name.split(' ')[0] %> 👋</h1>
+      <p class="muted">Pick up where you left off.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <div class="stat-row">
+      <div class="stat-tile"><span class="stat-label">Enrolled courses</span><span class="stat-value"><%= enrolled.length %></span></div>
+      <div class="stat-tile"><span class="stat-label">Lessons completed</span><span class="stat-value"><%= totals.completed %></span></div>
+      <div class="stat-tile"><span class="stat-label">Courses finished</span><span class="stat-value"><%= totals.finished %></span></div>
+    </div>
+
+    <h2 class="section-title">My courses</h2>
+    <% if (enrolled.length) { %>
+      <div class="my-courses">
+        <% enrolled.forEach(function (course) {
+             const progress = percent(course.completed_count, course.lesson_count); %>
+          <article class="card my-course">
+            <a class="course-thumb" href="/courses/<%= course.slug %>" tabindex="-1" aria-hidden="true"><%- include('../../partials/course-thumb', { course }) %></a>
+            <div class="my-course-body">
+              <div class="chip-row"><span class="chip"><%= course.category %></span><% if (course.done) { %><span class="badge badge-success"><%- icon('trophy', 'icon-xs') %> Completed</span><% } %></div>
+              <h3 class="card-title"><a href="/courses/<%= course.slug %>"><%= course.title %></a></h3>
+              <div class="progress-label"><span><%= course.completed_count %> / <%= pluralize(course.lesson_count, 'lesson') %></span><strong><%= progress %>%</strong></div>
+              <div class="progress" role="progressbar" aria-valuenow="<%= progress %>" aria-valuemin="0" aria-valuemax="100" aria-label="<%= course.title %> progress"><span style="width: <%= progress %>%"></span></div>
+              <% if (!course.is_published && !locals.isAdmin) { %>
+                <p class="muted small">This course is temporarily unavailable.</p>
+              <% } else if (course.nextLesson) { %>
+                <a class="btn btn-primary btn-sm" href="/courses/<%= course.slug %>/lessons/<%= course.nextLesson.id %>"><%- icon('play', 'icon-sm') %> <%= course.completed_count ? 'Continue' : 'Start' %>: <%= truncate(course.nextLesson.title, 40) %></a>
+              <% } else { %>
+                <a class="btn btn-secondary btn-sm" href="/courses/<%= course.slug %>">Review course</a>
+              <% } %>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <%- icon('cap', 'icon-xl') %>
+        <h3>You haven't enrolled in any courses yet</h3>
+        <p class="muted">Browse the catalogue and enroll for free.</p>
+        <a class="btn btn-primary" href="/courses">Browse courses</a>
+      </div>
+    <% } %>
+
+    <% if (suggestions.length) { %>
+      <h2 class="section-title">Recommended for you</h2>
+      <div class="card-grid">
+        <% suggestions.forEach(function (course) { %><%- include('../../partials/course-card', { course }) %><% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

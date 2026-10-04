@@ -1,0 +1,128 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <nav class="breadcrumbs"><a href="/admin/tutorials">Tutorials</a> <%- icon('chevron-right', 'icon-xs') %> <span><%= tutorial ? 'Edit' : 'New' %></span></nav>
+    <h1><%= tutorial ? tutorial.title : 'New tutorial' %></h1>
+  </div>
+  <% if (tutorial) { %>
+    <div class="admin-page-actions">
+      <a class="btn btn-secondary" href="/tutorials/<%= tutorial.slug %>" target="_blank" rel="noopener"><%- icon('eye') %> <%= tutorial.is_published ? 'View' : 'Preview' %></a>
+      <a class="btn btn-primary" href="/admin/tutorials/<%= tutorial.id %>/chapters/new"><%- icon('plus') %> Add chapter</a>
+    </div>
+  <% } %>
+</div>
+
+<% if (Object.keys(errors).length) { %>
+  <div class="alert alert-error" role="alert"><%- icon('alert') %> <span>Please fix the highlighted fields and try again.</span></div>
+<% } %>
+
+<form class="form editor-layout" method="post" action="/admin/tutorials<%= tutorial ? '/' + tutorial.id : '' %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="editor-main card card-pad">
+    <div class="field <%= errors.title ? 'has-error' : '' %>">
+      <label for="title">Tutorial title</label>
+      <input class="input input-lg" id="title" name="title" required maxlength="150" value="<%= values.title %>" placeholder="e.g. Python Tutorial" data-slug-source>
+      <% if (errors.title) { %><p class="field-error"><%= errors.title %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="slug">URL slug</label>
+      <div class="input-prefix"><span>/tutorials/</span><input class="input" id="slug" name="slug" maxlength="100" value="<%= values.slug %>" placeholder="generated-from-title" data-slug-target <%= tutorial ? 'data-slug-locked' : '' %>></div>
+    </div>
+    <div class="field <%= errors.description ? 'has-error' : '' %>">
+      <label for="description">Description</label>
+      <textarea class="input" id="description" name="description" rows="3" maxlength="500" placeholder="What does this tutorial cover?"><%= values.description %></textarea>
+      <% if (errors.description) { %><p class="field-error"><%= errors.description %></p><% } %>
+    </div>
+  </div>
+  <aside class="editor-side">
+    <div class="card card-pad">
+      <h3>Publishing</h3>
+      <label class="switch"><input type="checkbox" name="is_published" <%= values.is_published ? 'checked' : '' %>><span class="switch-ui"></span> Published</label>
+      <p class="field-hint">Drafts are only visible to admins.</p>
+    </div>
+    <div class="card card-pad">
+      <h3>Details</h3>
+      <div class="field">
+        <label for="category">Category</label>
+        <input class="input" id="category" name="category" list="category-list" maxlength="60" value="<%= values.category %>" placeholder="e.g. Programming">
+        <datalist id="category-list"><% categories.forEach(function (category) { %><option value="<%= category %>"><% }) %></datalist>
+      </div>
+      <div class="field">
+        <label for="badge">Badge text</label>
+        <input class="input" id="badge" name="badge" maxlength="4" value="<%= values.badge %>" placeholder="e.g. Py">
+        <p class="field-hint">Up to 4 characters, shown on the tutorial tile.</p>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" type="submit"><%= tutorial ? 'Save changes' : 'Create tutorial' %></button>
+  </aside>
+</form>
+
+<% if (tutorial) { %>
+  <section class="card section-card" id="chapters">
+    <div class="card-head">
+      <div>
+        <h2>Chapters</h2>
+        <p class="muted small"><%= pluralize(chapters.length, 'chapter') %> · reorder them with the arrows</p>
+      </div>
+      <a class="btn btn-primary btn-sm" href="/admin/tutorials/<%= tutorial.id %>/chapters/new"><%- icon('plus', 'icon-sm') %> Add chapter</a>
+    </div>
+    <% if (chapters.length) { %>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th class="num">#</th><th>Chapter</th><th>Updated</th><th>Order</th><th class="actions-col"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            <% chapters.forEach(function (chapter, i) { %>
+              <tr>
+                <td class="num muted"><%= i + 1 %></td>
+                <td><a href="/admin/tutorials/<%= tutorial.id %>/chapters/<%= chapter.id %>/edit"><strong><%= chapter.title %></strong></a><span class="muted small block">/<%= chapter.slug %></span></td>
+                <td class="muted small nowrap"><%= timeAgo(chapter.updated_at) %></td>
+                <td>
+                  <div class="row-actions">
+                    <form method="post" action="/admin/tutorials/<%= tutorial.id %>/chapters/<%= chapter.id %>/move">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="up">
+                      <button class="icon-btn" type="submit" <%= i === 0 ? 'disabled' : '' %> aria-label="Move up"><%- icon('chevron-up') %></button>
+                    </form>
+                    <form method="post" action="/admin/tutorials/<%= tutorial.id %>/chapters/<%= chapter.id %>/move">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="down">
+                      <button class="icon-btn" type="submit" <%= i === chapters.length - 1 ? 'disabled' : '' %> aria-label="Move down"><%- icon('chevron-down') %></button>
+                    </form>
+                  </div>
+                </td>
+                <td class="actions-col">
+                  <div class="row-actions">
+                    <a class="icon-btn" href="/tutorials/<%= tutorial.slug %>/<%= chapter.slug %>" title="View" aria-label="View chapter"><%- icon('eye') %></a>
+                    <a class="icon-btn" href="/admin/tutorials/<%= tutorial.id %>/chapters/<%= chapter.id %>/edit" title="Edit" aria-label="Edit chapter"><%- icon('edit') %></a>
+                    <form method="post" action="/admin/tutorials/<%= tutorial.id %>/chapters/<%= chapter.id %>/delete" data-confirm="Delete the chapter “<%= chapter.title %>”?">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button class="icon-btn icon-btn-danger" type="submit" title="Delete" aria-label="Delete chapter"><%- icon('trash') %></button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <%- icon('file', 'icon-xl') %>
+        <h3>No chapters yet</h3>
+        <a class="btn btn-primary" href="/admin/tutorials/<%= tutorial.id %>/chapters/new"><%- icon('plus') %> Write the first chapter</a>
+      </div>
+    <% } %>
+  </section>
+
+  <section class="card card-pad danger-zone">
+    <div>
+      <h2>Delete tutorial</h2>
+      <p class="muted">Deletes the tutorial and all <%= pluralize(chapters.length, 'chapter') %>.</p>
+    </div>
+    <form method="post" action="/admin/tutorials/<%= tutorial.id %>/delete" data-confirm="Delete “<%= tutorial.title %>” and all of its chapters? This can't be undone.">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn-danger" type="submit"><%- icon('trash') %> Delete tutorial</button>
+    </form>
+  </section>
+<% } %>
+
+<%- include('../partials/footer') %>

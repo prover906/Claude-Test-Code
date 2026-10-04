@@ -1,0 +1,107 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <nav class="breadcrumbs">
+      <a href="/admin/courses">Courses</a> <%- icon('chevron-right', 'icon-xs') %>
+      <a href="/admin/courses/<%= course.id %>/edit#lessons"><%= course.title %></a> <%- icon('chevron-right', 'icon-xs') %>
+      <span><%= lesson ? 'Edit lesson' : 'New lesson' %></span>
+    </nav>
+    <h1><%= lesson ? lesson.title : 'New lesson' %></h1>
+  </div>
+  <% if (lesson) { %>
+    <div class="admin-page-actions">
+      <a class="btn btn-secondary" href="/courses/<%= course.slug %>/lessons/<%= lesson.id %>" target="_blank" rel="noopener"><%- icon('eye') %> View lesson</a>
+    </div>
+  <% } %>
+</div>
+
+<% if (Object.keys(errors).length) { %>
+  <div class="alert alert-error" role="alert"><%- icon('alert') %> <span><%= errors.upload || 'Please fix the highlighted fields and try again.' %></span></div>
+<% } %>
+
+<form class="form editor-layout" method="post" enctype="multipart/form-data" data-upload-form
+      action="/admin/courses/<%= course.id %>/lessons<%= lesson ? '/' + lesson.id : '' %>?_csrf=<%= csrfToken %>">
+  <div class="editor-main">
+    <div class="card card-pad">
+      <div class="field <%= errors.title ? 'has-error' : '' %>">
+        <label for="title">Lesson title</label>
+        <input class="input input-lg" id="title" name="title" required maxlength="150" value="<%= values.title %>" placeholder="e.g. Variables and data types">
+        <% if (errors.title) { %><p class="field-error"><%= errors.title %></p><% } %>
+      </div>
+
+      <fieldset class="field">
+        <legend>Video</legend>
+        <div class="choice-cards" data-video-type>
+          <label class="choice-card">
+            <input type="radio" name="video_type" value="youtube" <%= values.video_type === 'youtube' ? 'checked' : '' %>>
+            <span><%- icon('youtube') %><strong>YouTube</strong><small>Paste a video link</small></span>
+          </label>
+          <label class="choice-card">
+            <input type="radio" name="video_type" value="upload" <%= values.video_type === 'upload' ? 'checked' : '' %>>
+            <span><%- icon('upload') %><strong>Upload</strong><small>MP4, WebM, OGG, MOV</small></span>
+          </label>
+          <label class="choice-card">
+            <input type="radio" name="video_type" value="none" <%= values.video_type === 'none' ? 'checked' : '' %>>
+            <span><%- icon('file') %><strong>No video</strong><small>Reading lesson</small></span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="field <%= errors.youtube_url ? 'has-error' : '' %>" data-video-panel="youtube">
+        <label for="youtube_url">YouTube link</label>
+        <input class="input" id="youtube_url" name="youtube_url" value="<%= values.youtube_url %>" placeholder="https://www.youtube.com/watch?v=…">
+        <% if (errors.youtube_url) { %><p class="field-error"><%= errors.youtube_url %></p><% } else { %><p class="field-hint">Works with youtube.com/watch, youtu.be, shorts and embed links.</p><% } %>
+      </div>
+
+      <div class="field <%= errors.video ? 'has-error' : '' %>" data-video-panel="upload">
+        <label for="video">Video file</label>
+        <% if (lesson && lesson.video_type === 'upload' && lesson.video_url) { %>
+          <div class="current-file"><%- icon('video', 'icon-sm') %> A video is uploaded. Choose a new file only to replace it.</div>
+        <% } %>
+        <input class="input" id="video" type="file" name="video" accept="video/mp4,video/webm,video/ogg,video/quicktime" data-max-mb="<%= maxVideoMb %>">
+        <% if (errors.video) { %><p class="field-error"><%= errors.video %></p><% } else { %><p class="field-hint">Up to <%= maxVideoMb %> MB. Videos are streamed only to enrolled students (and everyone, for free previews).</p><% } %>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="duration">Duration <span class="muted">(optional)</span></label>
+          <input class="input" id="duration" name="duration" maxlength="20" value="<%= values.duration %>" placeholder="e.g. 12:30 or 8 min read">
+        </div>
+        <div class="field field-end">
+          <label class="switch"><input type="checkbox" name="is_preview" <%= values.is_preview ? 'checked' : '' %>><span class="switch-ui"></span> Free preview</label>
+          <p class="field-hint">Anyone can watch preview lessons without enrolling.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="field">
+        <label for="content">Lesson notes</label>
+        <%- include('../partials/markdown-editor', { name: 'content', id: 'content', value: values.content, rows: 16, placeholder: 'Notes, code snippets and exercises shown under the video' }) %>
+      </div>
+    </div>
+  </div>
+
+  <aside class="editor-side">
+    <div class="card card-pad">
+      <h3>Downloadable resource</h3>
+      <% if (lesson && lesson.resource_file) { %>
+        <div class="current-file"><%- icon('file', 'icon-sm') %> <span><%= lesson.resource_name %></span></div>
+        <label class="check"><input type="checkbox" name="remove_resource"> Remove this file</label>
+      <% } %>
+      <div class="field">
+        <input class="input" type="file" name="resource" aria-label="Resource file" accept=".pdf,.zip,.tar,.gz,.7z,.rar,.txt,.md,.csv,.json" data-max-mb="50">
+        <p class="field-hint">Source code, slides or worksheets. PDF, ZIP, TAR, 7Z, RAR, TXT, MD, CSV or JSON up to 50 MB.</p>
+      </div>
+    </div>
+    <div class="upload-progress" data-upload-progress hidden><span></span></div>
+    <button class="btn btn-primary btn-block btn-lg" type="submit"><%= lesson ? 'Save lesson' : 'Add lesson' %></button>
+    <% if (!lesson) { %>
+      <button class="btn btn-secondary btn-block" type="submit" name="after" value="another">Add &amp; create another</button>
+    <% } %>
+    <a class="btn btn-ghost btn-block" href="/admin/courses/<%= course.id %>/edit#lessons">Cancel</a>
+  </aside>
+</form>
+
+<%- include('../partials/footer') %>

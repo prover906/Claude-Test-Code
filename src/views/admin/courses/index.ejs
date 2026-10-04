@@ -1,0 +1,87 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <h1>Courses</h1>
+    <p class="muted">Create courses, upload lessons and publish them to the website.</p>
+  </div>
+  <div class="admin-page-actions">
+    <a class="btn btn-primary" href="/admin/courses/new"><%- icon('plus') %> New course</a>
+  </div>
+</div>
+
+<form class="filter-bar" method="get" action="/admin/courses">
+  <div class="input-icon">
+    <%- icon('search') %>
+    <input class="input" type="search" name="q" value="<%= q %>" placeholder="Search courses" aria-label="Search courses">
+  </div>
+  <select class="input" name="status" aria-label="Status">
+    <option value="">All statuses</option>
+    <option value="published" <%= status === 'published' ? 'selected' : '' %>>Published</option>
+    <option value="draft" <%= status === 'draft' ? 'selected' : '' %>>Drafts</option>
+  </select>
+  <button class="btn btn-secondary" type="submit">Filter</button>
+  <% if (q || status) { %><a class="btn btn-ghost" href="/admin/courses">Clear</a><% } %>
+</form>
+
+<% if (courses.length) { %>
+  <div class="card table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Course</th>
+          <th>Category</th>
+          <th class="num">Lessons</th>
+          <th class="num">Learners</th>
+          <th>Status</th>
+          <th>Updated</th>
+          <th class="actions-col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% courses.forEach(function (course) { %>
+          <tr>
+            <td>
+              <a class="course-cell" href="/admin/courses/<%= course.id %>/edit">
+                <span class="mini-thumb"><%- include('../../partials/course-thumb', { course }) %></span>
+                <span><strong><%= course.title %></strong><span class="muted small"><%= course.level %><% if (course.is_featured) { %> · <%- icon('star', 'icon-xs') %> Featured<% } %></span></span>
+              </a>
+            </td>
+            <td><span class="chip"><%= course.category %></span></td>
+            <td class="num"><%= course.lesson_count %></td>
+            <td class="num"><%= course.enrollment_count %></td>
+            <td>
+              <form method="post" action="/admin/courses/<%= course.id %>/toggle">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="returnTo" value="/admin/courses">
+                <button type="submit" class="status-toggle <%= course.is_published ? 'is-on' : '' %>" title="<%= course.is_published ? 'Click to unpublish' : 'Click to publish' %>">
+                  <span class="dot"></span><%= course.is_published ? 'Published' : 'Draft' %>
+                </button>
+              </form>
+            </td>
+            <td class="muted small nowrap"><%= timeAgo(course.updated_at) %></td>
+            <td class="actions-col">
+              <div class="row-actions">
+                <a class="icon-btn" href="/courses/<%= course.slug %>" title="View on site" aria-label="View <%= course.title %> on site"><%- icon('eye') %></a>
+                <a class="icon-btn" href="/admin/courses/<%= course.id %>/edit" title="Edit" aria-label="Edit <%= course.title %>"><%- icon('edit') %></a>
+                <form method="post" action="/admin/courses/<%= course.id %>/delete" data-confirm="Delete “<%= course.title %>” and all of its lessons? This can't be undone.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="icon-btn icon-btn-danger" type="submit" title="Delete" aria-label="Delete <%= course.title %>"><%- icon('trash') %></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <div class="empty-state card">
+    <%- icon('cap', 'icon-xl') %>
+    <h3><%= q || status ? 'No courses match your filters' : 'No courses yet' %></h3>
+    <p class="muted">Create your first course, then add lessons to it.</p>
+    <a class="btn btn-primary" href="/admin/courses/new"><%- icon('plus') %> New course</a>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

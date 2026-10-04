@@ -1,0 +1,73 @@
+<%- include('../../partials/header') %>
+
+<section class="page-hero page-hero-sm">
+  <div class="container">
+    <h1>Account settings</h1>
+    <p class="muted">Update your profile and password.</p>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container settings-grid">
+    <div class="card card-pad">
+      <h2>Profile</h2>
+      <form method="post" action="/account?_csrf=<%= csrfToken %>" enctype="multipart/form-data" class="form">
+        <div class="field">
+          <label>Email</label>
+          <input class="input" value="<%= currentUser.email %>" disabled>
+          <p class="field-hint">Contact an administrator to change your email.</p>
+        </div>
+        <div class="field <%= errors.name ? 'has-error' : '' %>">
+          <label for="name">Full name</label>
+          <input class="input" id="name" name="name" required maxlength="80" value="<%= values.name %>">
+          <% if (errors.name) { %><p class="field-error"><%= errors.name %></p><% } %>
+        </div>
+        <div class="field">
+          <label for="bio">Bio</label>
+          <textarea class="input" id="bio" name="bio" rows="3" maxlength="500" placeholder="A sentence about you"><%= values.bio %></textarea>
+        </div>
+        <div class="field <%= errors.avatar ? 'has-error' : '' %>">
+          <label for="avatar">Profile picture</label>
+          <div class="avatar-field">
+            <span data-image-preview-target="avatar"><%- include('../../partials/avatar', { user: currentUser, size: 'lg' }) %></span>
+            <div>
+              <input class="input" id="avatar" name="avatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-image-preview="avatar">
+              <p class="field-hint">JPG, PNG, WebP or GIF, up to 5 MB.</p>
+              <% if (currentUser.avatar) { %>
+                <label class="check"><input type="checkbox" name="remove_avatar"> Remove current picture</label>
+              <% } %>
+            </div>
+          </div>
+          <% if (errors.avatar) { %><p class="field-error"><%= errors.avatar %></p><% } %>
+        </div>
+        <button class="btn btn-primary" type="submit">Save profile</button>
+      </form>
+    </div>
+
+    <div class="card card-pad">
+      <h2>Change password</h2>
+      <form method="post" action="/account/password" class="form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field <%= passwordErrors.current_password ? 'has-error' : '' %>">
+          <label for="current_password">Current password</label>
+          <input class="input" id="current_password" name="current_password" type="password" autocomplete="current-password" required>
+          <% if (passwordErrors.current_password) { %><p class="field-error"><%= passwordErrors.current_password %></p><% } %>
+        </div>
+        <div class="field <%= passwordErrors.password ? 'has-error' : '' %>">
+          <label for="new_password">New password</label>
+          <input class="input" id="new_password" name="password" type="password" autocomplete="new-password" required minlength="8">
+          <% if (passwordErrors.password) { %><p class="field-error"><%= passwordErrors.password %></p><% } else { %><p class="field-hint">At least 8 characters, with a letter and a number.</p><% } %>
+        </div>
+        <div class="field <%= passwordErrors.confirm ? 'has-error' : '' %>">
+          <label for="confirm_password">Confirm new password</label>
+          <input class="input" id="confirm_password" name="confirm" type="password" autocomplete="new-password" required>
+          <% if (passwordErrors.confirm) { %><p class="field-error"><%= passwordErrors.confirm %></p><% } %>
+        </div>
+        <button class="btn btn-primary" type="submit">Update password</button>
+      </form>
+      <p class="muted small">Member since <%= formatDate(currentUser.created_at) %> · <%= currentUser.role === 'admin' ? 'Administrator' : 'Student' %></p>
+    </div>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

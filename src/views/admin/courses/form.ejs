@@ -1,0 +1,161 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <nav class="breadcrumbs"><a href="/admin/courses">Courses</a> <%- icon('chevron-right', 'icon-xs') %> <span><%= course ? 'Edit' : 'New' %></span></nav>
+    <h1><%= course ? course.title : 'New course' %></h1>
+  </div>
+  <% if (course) { %>
+    <div class="admin-page-actions">
+      <a class="btn btn-secondary" href="/courses/<%= course.slug %>" target="_blank" rel="noopener"><%- icon('eye') %> <%= course.is_published ? 'View' : 'Preview' %></a>
+      <a class="btn btn-primary" href="/admin/courses/<%= course.id %>/lessons/new"><%- icon('plus') %> Add lesson</a>
+    </div>
+  <% } %>
+</div>
+
+<% if (Object.keys(errors).length) { %>
+  <div class="alert alert-error" role="alert"><%- icon('alert') %> <span>Please fix the highlighted fields and try again.</span></div>
+<% } %>
+
+<form class="form editor-layout" method="post" enctype="multipart/form-data" data-upload-form
+      action="/admin/courses<%= course ? '/' + course.id : '' %>?_csrf=<%= csrfToken %>">
+  <div class="editor-main card card-pad">
+    <div class="field <%= errors.title ? 'has-error' : '' %>">
+      <label for="title">Course title</label>
+      <input class="input input-lg" id="title" name="title" required maxlength="150" value="<%= values.title %>" placeholder="e.g. Python for Absolute Beginners" data-slug-source>
+      <% if (errors.title) { %><p class="field-error"><%= errors.title %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="slug">URL slug</label>
+      <div class="input-prefix"><span>/courses/</span><input class="input" id="slug" name="slug" maxlength="100" value="<%= values.slug %>" placeholder="generated-from-title" data-slug-target <%= course ? 'data-slug-locked' : '' %>></div>
+      <p class="field-hint">Leave empty to generate it from the title.</p>
+    </div>
+    <div class="field <%= errors.summary ? 'has-error' : '' %>">
+      <label for="summary">Short summary</label>
+      <input class="input" id="summary" name="summary" maxlength="300" value="<%= values.summary %>" placeholder="One sentence shown on course cards">
+      <% if (errors.summary) { %><p class="field-error"><%= errors.summary %></p><% } %>
+    </div>
+    <div class="field">
+      <label for="description">Full description</label>
+      <%- include('../partials/markdown-editor', { name: 'description', id: 'description', value: values.description, rows: 12, placeholder: 'What will students learn? Who is this course for?' }) %>
+    </div>
+  </div>
+
+  <aside class="editor-side">
+    <div class="card card-pad">
+      <h3>Publishing</h3>
+      <label class="switch"><input type="checkbox" name="is_published" <%= values.is_published ? 'checked' : '' %>><span class="switch-ui"></span> Published</label>
+      <p class="field-hint">Drafts are only visible to admins.</p>
+      <label class="switch"><input type="checkbox" name="is_featured" <%= values.is_featured ? 'checked' : '' %>><span class="switch-ui"></span> Featured on home page</label>
+    </div>
+    <div class="card card-pad">
+      <h3>Details</h3>
+      <div class="field">
+        <label for="category">Category</label>
+        <input class="input" id="category" name="category" list="category-list" maxlength="60" value="<%= values.category %>" placeholder="e.g. Python">
+        <datalist id="category-list">
+          <% categories.forEach(function (category) { %><option value="<%= category %>"><% }) %>
+        </datalist>
+      </div>
+      <div class="field">
+        <label for="level">Level</label>
+        <select class="input" id="level" name="level">
+          <% levels.forEach(function (level) { %><option <%= values.level === level ? 'selected' : '' %>><%= level %></option><% }) %>
+        </select>
+      </div>
+    </div>
+    <div class="card card-pad">
+      <h3>Cover image</h3>
+      <div class="thumb-preview course-thumb" data-image-preview-target="thumbnail">
+        <% if (course) { %><%- include('../../partials/course-thumb', { course }) %><% } else { %><span class="thumb-empty"><%- icon('image', 'icon-lg') %><span>16:9 image</span></span><% } %>
+      </div>
+      <div class="field <%= errors.thumbnail ? 'has-error' : '' %>">
+        <input class="input" type="file" name="thumbnail" accept="image/png,image/jpeg,image/webp,image/gif" data-image-preview="thumbnail" data-max-mb="5" aria-label="Cover image">
+        <p class="field-hint">JPG, PNG, WebP or GIF up to 5 MB. 1280×720 works best.</p>
+        <% if (errors.thumbnail) { %><p class="field-error"><%= errors.thumbnail %></p><% } %>
+        <% if (course && course.thumbnail) { %><label class="check"><input type="checkbox" name="remove_thumbnail"> Remove current image</label><% } %>
+      </div>
+    </div>
+    <div class="upload-progress" data-upload-progress hidden><span></span></div>
+    <button class="btn btn-primary btn-block btn-lg" type="submit"><%= course ? 'Save changes' : 'Create course' %></button>
+  </aside>
+</form>
+
+<% if (course) { %>
+  <section class="card section-card" id="lessons">
+    <div class="card-head">
+      <div>
+        <h2>Lessons</h2>
+        <p class="muted small"><%= pluralize(lessons.length, 'lesson') %> · reorder them with the arrows</p>
+      </div>
+      <a class="btn btn-primary btn-sm" href="/admin/courses/<%= course.id %>/lessons/new"><%- icon('plus', 'icon-sm') %> Add lesson</a>
+    </div>
+    <% if (lessons.length) { %>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th class="num">#</th><th>Lesson</th><th>Type</th><th>Duration</th><th>Order</th><th class="actions-col"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            <% lessons.forEach(function (lesson, i) { %>
+              <tr>
+                <td class="num muted"><%= i + 1 %></td>
+                <td>
+                  <a href="/admin/courses/<%= course.id %>/lessons/<%= lesson.id %>/edit"><strong><%= lesson.title %></strong></a>
+                  <% if (lesson.is_preview) { %> <span class="badge badge-primary">Free preview</span><% } %>
+                  <% if (lesson.resource_file) { %> <span class="badge" title="<%= lesson.resource_name %>"><%- icon('download', 'icon-xs') %> File</span><% } %>
+                </td>
+                <td class="nowrap">
+                  <% if (lesson.video_type === 'youtube') { %><span class="type-pill"><%- icon('youtube', 'icon-sm') %> YouTube</span>
+                  <% } else if (lesson.video_type === 'upload') { %><span class="type-pill"><%- icon('video', 'icon-sm') %> Video</span>
+                  <% } else { %><span class="type-pill"><%- icon('file', 'icon-sm') %> Reading</span><% } %>
+                </td>
+                <td class="muted small nowrap"><%= lesson.duration || '—' %></td>
+                <td>
+                  <div class="row-actions">
+                    <form method="post" action="/admin/courses/<%= course.id %>/lessons/<%= lesson.id %>/move">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="up">
+                      <button class="icon-btn" type="submit" <%= i === 0 ? 'disabled' : '' %> aria-label="Move up"><%- icon('chevron-up') %></button>
+                    </form>
+                    <form method="post" action="/admin/courses/<%= course.id %>/lessons/<%= lesson.id %>/move">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="direction" value="down">
+                      <button class="icon-btn" type="submit" <%= i === lessons.length - 1 ? 'disabled' : '' %> aria-label="Move down"><%- icon('chevron-down') %></button>
+                    </form>
+                  </div>
+                </td>
+                <td class="actions-col">
+                  <div class="row-actions">
+                    <a class="icon-btn" href="/courses/<%= course.slug %>/lessons/<%= lesson.id %>" title="View" aria-label="View lesson"><%- icon('eye') %></a>
+                    <a class="icon-btn" href="/admin/courses/<%= course.id %>/lessons/<%= lesson.id %>/edit" title="Edit" aria-label="Edit lesson"><%- icon('edit') %></a>
+                    <form method="post" action="/admin/courses/<%= course.id %>/lessons/<%= lesson.id %>/delete" data-confirm="Delete the lesson “<%= lesson.title %>”?">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button class="icon-btn icon-btn-danger" type="submit" title="Delete" aria-label="Delete lesson"><%- icon('trash') %></button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <%- icon('play-circle', 'icon-xl') %>
+        <h3>No lessons yet</h3>
+        <p class="muted">Add a YouTube video, upload a video file, or write a reading lesson.</p>
+        <a class="btn btn-primary" href="/admin/courses/<%= course.id %>/lessons/new"><%- icon('plus') %> Add the first lesson</a>
+      </div>
+    <% } %>
+  </section>
+
+  <section class="card card-pad danger-zone">
+    <div>
+      <h2>Delete course</h2>
+      <p class="muted">Deletes the course, all <%= pluralize(lessons.length, 'lesson') %>, uploaded videos and student progress.</p>
+    </div>
+    <form method="post" action="/admin/courses/<%= course.id %>/delete" data-confirm="Delete “<%= course.title %>” and all of its lessons? This can't be undone.">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn-danger" type="submit"><%- icon('trash') %> Delete course</button>
+    </form>
+  </section>
+<% } %>
+
+<%- include('../partials/footer') %>

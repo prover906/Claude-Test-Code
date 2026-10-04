@@ -1,0 +1,73 @@
+<%- include('../partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <h1>Tutorials</h1>
+    <p class="muted">Written guides made of chapters. Great for reference material and step-by-step docs.</p>
+  </div>
+  <div class="admin-page-actions">
+    <a class="btn btn-primary" href="/admin/tutorials/new"><%- icon('plus') %> New tutorial</a>
+  </div>
+</div>
+
+<form class="filter-bar" method="get" action="/admin/tutorials">
+  <div class="input-icon">
+    <%- icon('search') %>
+    <input class="input" type="search" name="q" value="<%= q %>" placeholder="Search tutorials" aria-label="Search tutorials">
+  </div>
+  <button class="btn btn-secondary" type="submit">Search</button>
+  <% if (q) { %><a class="btn btn-ghost" href="/admin/tutorials">Clear</a><% } %>
+</form>
+
+<% if (tutorials.length) { %>
+  <div class="card table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Tutorial</th><th>Category</th><th class="num">Chapters</th><th>Status</th><th>Updated</th><th class="actions-col"><span class="sr-only">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        <% tutorials.forEach(function (tutorial) { %>
+          <tr>
+            <td>
+              <a class="course-cell" href="/admin/tutorials/<%= tutorial.id %>/edit">
+                <span class="tutorial-badge tutorial-badge-sm" style="background: <%= gradient(tutorial.slug) %>"><%= tutorial.badge || tutorial.title.slice(0, 2) %></span>
+                <span><strong><%= tutorial.title %></strong><span class="muted small">/tutorials/<%= tutorial.slug %></span></span>
+              </a>
+            </td>
+            <td><span class="chip"><%= tutorial.category %></span></td>
+            <td class="num"><%= tutorial.chapter_count %></td>
+            <td>
+              <form method="post" action="/admin/tutorials/<%= tutorial.id %>/toggle">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="returnTo" value="/admin/tutorials">
+                <button type="submit" class="status-toggle <%= tutorial.is_published ? 'is-on' : '' %>" title="<%= tutorial.is_published ? 'Click to unpublish' : 'Click to publish' %>">
+                  <span class="dot"></span><%= tutorial.is_published ? 'Published' : 'Draft' %>
+                </button>
+              </form>
+            </td>
+            <td class="muted small nowrap"><%= timeAgo(tutorial.updated_at) %></td>
+            <td class="actions-col">
+              <div class="row-actions">
+                <a class="icon-btn" href="/tutorials/<%= tutorial.slug %>" title="View on site" aria-label="View <%= tutorial.title %>"><%- icon('eye') %></a>
+                <a class="icon-btn" href="/admin/tutorials/<%= tutorial.id %>/edit" title="Edit" aria-label="Edit <%= tutorial.title %>"><%- icon('edit') %></a>
+                <form method="post" action="/admin/tutorials/<%= tutorial.id %>/delete" data-confirm="Delete “<%= tutorial.title %>” and all of its chapters? This can't be undone.">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="icon-btn icon-btn-danger" type="submit" title="Delete" aria-label="Delete <%= tutorial.title %>"><%- icon('trash') %></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <div class="empty-state card">
+    <%- icon('book', 'icon-xl') %>
+    <h3><%= q ? 'No tutorials match your search' : 'No tutorials yet' %></h3>
+    <p class="muted">Create a tutorial, then write its chapters in Markdown.</p>
+    <a class="btn btn-primary" href="/admin/tutorials/new"><%- icon('plus') %> New tutorial</a>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

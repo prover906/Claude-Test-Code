@@ -1,0 +1,55 @@
+<%- include('../../partials/head') %>
+<body class="admin-body">
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="admin-shell">
+  <aside class="admin-sidebar" id="admin-nav" data-admin-nav>
+    <a class="brand" href="/admin">
+      <span class="brand-mark"><%- icon('code') %></span>
+      <span class="brand-name"><%= siteName %></span>
+      <span class="badge badge-primary">Admin</span>
+    </a>
+    <nav class="admin-nav" aria-label="Admin">
+      <% [
+           ['dashboard', '/admin', 'grid', 'Dashboard'],
+           ['courses', '/admin/courses', 'cap', 'Courses'],
+           ['tutorials', '/admin/tutorials', 'book', 'Tutorials'],
+           ['users', '/admin/users', 'users', 'Users'],
+           ['media', '/admin/media', 'image', 'Media library'],
+         ].forEach(function (item) { %>
+        <a href="<%= item[1] %>" class="<%= adminSection === item[0] ? 'active' : '' %>" <% if (adminSection === item[0]) { %>aria-current="page"<% } %>><%- icon(item[2]) %> <%= item[3] %></a>
+      <% }) %>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <a href="/" class="admin-view-site"><%- icon('external') %> View website</a>
+      <div class="admin-me">
+        <%- include('../../partials/avatar', { user: currentUser, size: 'sm' }) %>
+        <div class="admin-me-text">
+          <strong><%= currentUser.name %></strong>
+          <span><%= currentUser.email %></span>
+        </div>
+        <form method="post" action="/logout">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="icon-btn" type="submit" aria-label="Sign out" title="Sign out"><%- icon('logout') %></button>
+        </form>
+      </div>
+    </div>
+  </aside>
+  <div class="admin-backdrop" data-admin-nav-close></div>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <button type="button" class="icon-btn admin-nav-toggle" data-admin-nav-toggle aria-controls="admin-nav" aria-expanded="false" aria-label="Open admin menu"><%- icon('menu') %></button>
+      <form class="admin-search" action="/admin/users" method="get" role="search">
+        <%- icon('search') %>
+        <input type="search" name="q" placeholder="Find a user by name or email" aria-label="Find a user">
+      </form>
+      <div class="admin-topbar-tools">
+        <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Switch colour theme" title="Switch colour theme">
+          <span class="theme-icon-dark"><%- icon('moon') %></span>
+          <span class="theme-icon-light"><%- icon('sun') %></span>
+        </button>
+        <a class="btn btn-secondary btn-sm" href="/"><%- icon('home', 'icon-sm') %> <span class="hide-sm">Website</span></a>
+      </div>
+    </header>
+    <%- include('../../partials/flash') %>
+    <main id="main" class="admin-content">

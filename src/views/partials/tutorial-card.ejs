@@ -1,0 +1,9 @@
+<a class="card tutorial-card" href="/tutorials/<%= tutorial.slug %>">
+  <span class="tutorial-badge" style="background: <%= gradient(tutorial.slug) %>"><%= tutorial.badge || tutorial.title.slice(0, 2) %></span>
+  <span class="tutorial-card-body">
+    <span class="tutorial-card-title"><%= tutorial.title %><% if (!tutorial.is_published) { %> <span class="badge badge-warning">Draft</span><% } %></span>
+    <span class="tutorial-card-text"><%= truncate(tutorial.description, 90) %></span>
+    <span class="tutorial-card-meta"><%= pluralize(tutorial.chapter_count, 'chapter') %></span>
+  </span>
+  <span class="tutorial-card-arrow"><%- icon('arrow-right') %></span>
+</a>

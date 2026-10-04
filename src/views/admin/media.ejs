@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <h1>Media library</h1>
+    <p class="muted">Upload images, videos and files, then paste their links into lessons and tutorial chapters.</p>
+  </div>
+</div>
+
+<form class="card card-pad upload-zone" method="post" action="/admin/media?_csrf=<%= csrfToken %>" enctype="multipart/form-data" data-upload-form data-dropzone>
+  <span class="upload-zone-icon"><%- icon('upload', 'icon-lg') %></span>
+  <div class="upload-zone-text">
+    <strong>Drop a file here or choose one</strong>
+    <span class="muted small">Images, videos (up to <%= maxVideoMb %> MB), PDF or ZIP</span>
+  </div>
+  <input class="input" type="file" name="file" required aria-label="File to upload" data-max-mb="<%= maxVideoMb %>"
+         accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,video/ogg,video/quicktime,application/pdf,application/zip,.zip">
+  <button class="btn btn-primary" type="submit"><%- icon('upload', 'icon-sm') %> Upload</button>
+  <div class="upload-progress" data-upload-progress hidden><span></span></div>
+  <% if (error) { %><p class="field-error"><%= error %></p><% } %>
+</form>
+
+<% if (items.length) { %>
+  <div class="media-grid">
+    <% items.forEach(function (item) {
+         const isImage = item.mime.startsWith('image/');
+         const isVideo = item.mime.startsWith('video/'); %>
+      <article class="card media-item">
+        <a class="media-preview" href="<%= item.url %>" target="_blank" rel="noopener">
+          <% if (isImage) { %><img src="<%= item.url %>" alt="<%= item.original_name %>" loading="lazy">
+          <% } else if (isVideo) { %><%- icon('video', 'icon-xl') %>
+          <% } else { %><%- icon('file', 'icon-xl') %><% } %>
+        </a>
+        <div class="media-body">
+          <strong class="media-name" title="<%= item.original_name %>"><%= item.original_name %></strong>
+          <span class="muted small"><%= formatBytes(item.size) %> · <%= formatDate(item.created_at) %></span>
+          <div class="media-actions">
+            <button type="button" class="btn btn-secondary btn-sm" data-copy="<%= item.url %>"><%- icon('copy', 'icon-sm') %> Copy link</button>
+            <% if (isImage) { %>
+              <button type="button" class="btn btn-ghost btn-sm" data-copy="![<%= item.original_name.replace(/\.[^.]+$/, '') %>](<%= item.url %>)" title="Copy as Markdown image">MD</button>
+            <% } %>
+            <form method="post" action="/admin/media/<%= item.id %>/delete" data-confirm="Delete <%= item.original_name %>? Pages that link to it will show a broken link.">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="icon-btn icon-btn-danger" type="submit" aria-label="Delete <%= item.original_name %>"><%- icon('trash') %></button>
+            </form>
+          </div>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <%- icon('image', 'icon-xl') %>
+    <h3>No files yet</h3>
+    <p class="muted">Uploaded files will appear here.</p>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

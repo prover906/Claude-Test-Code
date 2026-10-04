@@ -1,0 +1,67 @@
+<%- include('head') %>
+<body class="<%= locals.bodyClass || '' %>">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand" href="/" aria-label="<%= siteName %> home">
+      <span class="brand-mark"><%- icon('code') %></span>
+      <span class="brand-name"><%= siteName %></span>
+    </a>
+
+    <div class="nav-collapse" id="site-nav" data-nav>
+      <nav class="nav-links" aria-label="Main">
+        <a href="/" class="<%= locals.currentPath === '/' ? 'active' : '' %>">Home</a>
+        <a href="/courses" class="<%= (locals.currentPath || '').startsWith('/courses') ? 'active' : '' %>">Courses</a>
+        <a href="/tutorials" class="<%= (locals.currentPath || '').startsWith('/tutorials') ? 'active' : '' %>">Tutorials</a>
+        <% if (locals.currentUser) { %>
+          <a href="/dashboard" class="<%= locals.currentPath === '/dashboard' ? 'active' : '' %>">My learning</a>
+        <% } %>
+        <% if (locals.isAdmin) { %>
+          <a href="/admin" class="nav-admin-link">Admin</a>
+        <% } %>
+      </nav>
+      <form class="nav-search" action="/search" method="get" role="search">
+        <%- icon('search') %>
+        <input type="search" name="q" placeholder="Search courses & tutorials" aria-label="Search" value="<%= locals.searchQuery || '' %>">
+      </form>
+      <% if (!locals.currentUser) { %>
+        <div class="nav-auth">
+          <a class="btn btn-ghost" href="/login">Sign in</a>
+          <% if (allowSignup) { %><a class="btn btn-primary" href="/signup">Sign up free</a><% } %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="nav-tools">
+      <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Switch colour theme" title="Switch colour theme">
+        <span class="theme-icon-dark"><%- icon('moon') %></span>
+        <span class="theme-icon-light"><%- icon('sun') %></span>
+      </button>
+      <% if (locals.currentUser) { %>
+        <details class="user-menu" data-menu>
+          <summary aria-label="Account menu">
+            <%- include('avatar', { user: currentUser, size: 'sm' }) %>
+          </summary>
+          <div class="menu" role="menu">
+            <div class="menu-header">
+              <strong><%= currentUser.name %></strong>
+              <span><%= currentUser.email %></span>
+            </div>
+            <a href="/dashboard" role="menuitem"><%- icon('cap') %> My learning</a>
+            <a href="/account" role="menuitem"><%- icon('settings') %> Account settings</a>
+            <% if (locals.isAdmin) { %><a href="/admin" role="menuitem"><%- icon('grid') %> Admin dashboard</a><% } %>
+            <form method="post" action="/logout">
+              <input type="hidden" name="_csrf" value="<%= locals.csrfToken %>">
+              <button type="submit" role="menuitem"><%- icon('logout') %> Sign out</button>
+            </form>
+          </div>
+        </details>
+      <% } %>
+      <button type="button" class="icon-btn nav-toggle" data-nav-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Open menu">
+        <%- icon('menu') %>
+      </button>
+    </div>
+  </div>
+</header>
+<%- include('flash') %>
+<main id="main">

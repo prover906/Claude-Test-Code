@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+
+<section class="section error-page">
+  <div class="container narrow center">
+    <p class="error-code"><%= status %></p>
+    <h1><%= title %></h1>
+    <p class="lead muted"><%= message %></p>
+    <div class="hero-actions center">
+      <a class="btn btn-primary" href="/"><%- icon('home') %> Go home</a>
+      <a class="btn btn-secondary" href="/courses">Browse courses</a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

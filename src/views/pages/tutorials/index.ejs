@@ -1,0 +1,26 @@
+<%- include('../../partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <h1>Tutorials</h1>
+    <p class="lead">Written, chapter-by-chapter guides with runnable examples. No sign-up needed.</p>
+  </div>
+</section>
+
+<section class="section section-tight">
+  <div class="container">
+    <% if (tutorials.length) { %>
+      <div class="tutorial-grid">
+        <% tutorials.forEach(function (tutorial) { %><%- include('../../partials/tutorial-card', { tutorial }) %><% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <%- icon('book', 'icon-xl') %>
+        <h3>No tutorials yet</h3>
+        <p class="muted">Tutorials published from the admin dashboard will show up here.</p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

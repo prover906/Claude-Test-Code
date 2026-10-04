@@ -1,0 +1,35 @@
+</main>
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="/">
+        <span class="brand-mark"><%- icon('code') %></span>
+        <span class="brand-name"><%= siteName %></span>
+      </a>
+      <p>Free, practical coding courses and tutorials. Learn by building, one lesson at a time.</p>
+    </div>
+    <div>
+      <h4>Learn</h4>
+      <a href="/courses">All courses</a>
+      <a href="/tutorials">Tutorials</a>
+      <a href="/search">Search</a>
+    </div>
+    <div>
+      <h4>Account</h4>
+      <% if (locals.currentUser) { %>
+        <a href="/dashboard">My learning</a>
+        <a href="/account">Settings</a>
+        <% if (locals.isAdmin) { %><a href="/admin">Admin dashboard</a><% } %>
+      <% } else { %>
+        <a href="/login">Sign in</a>
+        <% if (allowSignup) { %><a href="/signup">Create account</a><% } %>
+      <% } %>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <span>© <%= year %> <%= siteName %>. All rights reserved.</span>
+    <span>Made with ♥ for learners everywhere.</span>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<%- include('partials/header') %>
+
+<div class="admin-page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="muted">Welcome back, <%= currentUser.name.split(' ')[0] %>. Here's what's happening on <%= siteName %>.</p>
+  </div>
+  <div class="admin-page-actions">
+    <a class="btn btn-primary" href="/admin/courses/new"><%- icon('plus') %> New course</a>
+    <a class="btn btn-secondary" href="/admin/tutorials/new"><%- icon('plus') %> New tutorial</a>
+  </div>
+</div>
+
+<div class="stat-row stat-row-5">
+  <a class="stat-tile" href="/admin/users">
+    <span class="stat-label"><%- icon('users', 'icon-sm') %> Users</span>
+    <span class="stat-value"><%= stats.users.toLocaleString('en-US') %></span>
+    <span class="stat-sub"><%= signupsTotal %> new in the last 14 days</span>
+  </a>
+  <a class="stat-tile" href="/admin/courses">
+    <span class="stat-label"><%- icon('cap', 'icon-sm') %> Courses</span>
+    <span class="stat-value"><%= stats.courses %></span>
+    <span class="stat-sub"><%= stats.publishedCourses %> published</span>
+  </a>
+  <a class="stat-tile" href="/admin/courses">
+    <span class="stat-label"><%- icon('play-circle', 'icon-sm') %> Lessons</span>
+    <span class="stat-value"><%= stats.lessons %></span>
+    <span class="stat-sub">across all courses</span>
+  </a>
+  <a class="stat-tile" href="/admin/tutorials">
+    <span class="stat-label"><%- icon('book', 'icon-sm') %> Tutorials</span>
+    <span class="stat-value"><%= stats.tutorials %></span>
+    <span class="stat-sub"><%= pluralize(stats.chapters, 'chapter') %></span>
+  </a>
+  <div class="stat-tile">
+    <span class="stat-label"><%- icon('check-circle', 'icon-sm') %> Enrollments</span>
+    <span class="stat-value"><%= stats.enrollments %></span>
+    <span class="stat-sub">course sign-ups</span>
+  </div>
+</div>
+
+<div class="admin-grid">
+  <figure class="card card-pad chart" data-chart>
+    <figcaption class="chart-head">
+      <div>
+        <h2>New signups</h2>
+        <p class="muted small">Accounts created per day, last 14 days</p>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" data-chart-table-toggle aria-expanded="false">Show table</button>
+    </figcaption>
+    <div class="chart-body" data-chart-body>
+      <div class="chart-plot">
+        <div class="chart-grid" aria-hidden="true">
+          <% chart.ticks.forEach(function (tick) { %>
+            <div class="chart-gridline" style="bottom: <%= (tick / chart.top) * 100 %>%"><span class="chart-tick"><%= tick.toLocaleString('en-US') %></span></div>
+          <% }) %>
+        </div>
+        <div class="chart-cols">
+          <% let peakLabelled = false; chart.bars.forEach(function (bar) {
+               const labelPeak = !peakLabelled && chart.peak > 0 && bar.count === chart.peak;
+               if (labelPeak) peakLabelled = true; %>
+            <div class="chart-col" tabindex="0" data-tip-label="<%= bar.label %>" data-tip-value="<%= pluralize(bar.count, 'signup') %>" aria-label="<%= bar.label %>: <%= pluralize(bar.count, 'signup') %>">
+              <span class="chart-bar" style="height: <%= bar.pct %>%">
+                <% if (labelPeak) { %><span class="chart-peak"><%= bar.count %></span><% } %>
+              </span>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <div class="chart-x" aria-hidden="true">
+        <% chart.bars.forEach(function (bar, i) { %>
+          <span class="<%= i % 2 ? 'is-minor' : '' %>"><%= bar.label %></span>
+        <% }) %>
+      </div>
+      <div class="chart-tooltip" role="status" hidden><strong></strong><span></span></div>
+    </div>
+    <div class="chart-table" data-chart-table hidden>
+      <table class="table table-compact">
+        <thead><tr><th>Day</th><th class="num">Signups</th></tr></thead>
+        <tbody>
+          <% chart.bars.forEach(function (bar) { %><tr><td><%= bar.label %></td><td class="num"><%= bar.count %></td></tr><% }) %>
+        </tbody>
+      </table>
+    </div>
+  </figure>
+
+  <div class="card card-pad">
+    <h2>Quick actions</h2>
+    <div class="quick-actions">
+      <a href="/admin/courses/new"><span class="qa-icon"><%- icon('cap') %></span><span><strong>Upload a course</strong><small>Add details, a cover and lessons</small></span></a>
+      <a href="/admin/tutorials/new"><span class="qa-icon"><%- icon('book') %></span><span><strong>Write a tutorial</strong><small>Chapters in Markdown</small></span></a>
+      <a href="/admin/users/new"><span class="qa-icon"><%- icon('user') %></span><span><strong>Add a user</strong><small>Create a student or admin</small></span></a>
+      <a href="/admin/media"><span class="qa-icon"><%- icon('upload') %></span><span><strong>Upload media</strong><small>Images and files for content</small></span></a>
+    </div>
+  </div>
+</div>
+
+<div class="admin-grid">
+  <section class="card">
+    <div class="card-head">
+      <h2>Newest users</h2>
+      <a class="btn btn-ghost btn-sm" href="/admin/users">Manage users <%- icon('arrow-right', 'icon-sm') %></a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>User</th><th>Role</th><th>Joined</th></tr></thead>
+        <tbody>
+          <% recentUsers.forEach(function (user) { %>
+            <tr>
+              <td>
+                <a class="user-cell" href="/admin/users/<%= user.id %>">
+                  <%- include('../partials/avatar', { user, size: 'sm' }) %>
+                  <span><strong><%= user.name %></strong><span class="muted small"><%= user.email %></span></span>
+                </a>
+              </td>
+              <td><span class="badge <%= user.role === 'admin' ? 'badge-primary' : '' %>"><%= user.role %></span><% if (user.status === 'banned') { %> <span class="badge badge-danger">banned</span><% } %></td>
+              <td class="muted small nowrap"><%= timeAgo(user.created_at) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Most popular courses</h2>
+      <a class="btn btn-ghost btn-sm" href="/admin/courses">All courses <%- icon('arrow-right', 'icon-sm') %></a>
+    </div>
+    <% if (popularCourses.length) { %>
+      <ul class="rank-list">
+        <% popularCourses.forEach(function (course, i) { %>
+          <li>
+            <span class="rank"><%= i + 1 %></span>
+            <a href="/admin/courses/<%= course.id %>/edit"><%= course.title %></a>
+            <span class="muted small nowrap"><%= pluralize(course.enrollment_count, 'learner') %></span>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="muted card-pad">No courses yet.</p>
+    <% } %>
+  </section>
+</div>
+
+<%- include('partials/footer') %>

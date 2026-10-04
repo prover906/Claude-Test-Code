@@ -1,0 +1,54 @@
+<%- include('../../partials/header', { bodyClass: 'page-auth' }) %>
+
+<section class="auth-wrap">
+  <div class="auth-card card">
+    <div class="auth-head">
+      <span class="brand-mark brand-mark-lg"><%- icon('code') %></span>
+      <h1>Welcome back</h1>
+      <p class="muted">Sign in to continue learning.</p>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error" role="alert"><%- icon('alert') %> <span><%= error %></span></div>
+    <% } %>
+
+    <form method="post" action="/login" class="form" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="next" value="<%= next %>">
+      <div class="field">
+        <label for="email">Email</label>
+        <input class="input" id="email" name="email" type="email" autocomplete="email" required value="<%= values.email || '' %>" data-login-email>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input class="input" id="password" name="password" type="password" autocomplete="current-password" required data-login-password>
+          <button type="button" class="icon-btn" data-toggle-password aria-label="Show password"><%- icon('eye') %></button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" type="submit">Sign in</button>
+    </form>
+
+    <% if (allowSignup) { %>
+      <p class="auth-switch">New to <%= siteName %>? <a href="/signup<%= next ? `?next=${encodeURIComponent(next)}` : '' %>">Create a free account</a></p>
+    <% } %>
+
+    <% if (demo) { %>
+      <div class="demo-box">
+        <div class="demo-box-head"><%- icon('key', 'icon-sm') %> <strong>Demo accounts</strong> <span class="muted small">click one to sign in</span></div>
+        <button type="button" class="demo-account" data-demo-email="<%= demo.admin.email %>" data-demo-password="<%= demo.admin.password %>">
+          <span class="badge badge-primary">Admin</span>
+          <span class="demo-cred"><code><%= demo.admin.email %></code><code><%= demo.admin.password %></code></span>
+        </button>
+        <% if (demo.student) { %>
+          <button type="button" class="demo-account" data-demo-email="<%= demo.student.email %>" data-demo-password="<%= demo.student.password %>">
+            <span class="badge">Student</span>
+            <span class="demo-cred"><code><%= demo.student.email %></code><code><%= demo.student.password %></code></span>
+          </button>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,8 @@
+<% if (course.thumbnail) { %>
+  <img src="<%= course.thumbnail %>" alt="" loading="lazy">
+<% } else { %>
+  <span class="thumb-fallback" style="background: <%= gradient(course.slug) %>">
+    <span class="thumb-fallback-cat"><%= course.category %></span>
+    <span class="thumb-fallback-title"><%= course.title %></span>
+  </span>
+<% } %>

@@ -1,0 +1,119 @@
+<%- include('../partials/header') %>
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow"><%- icon('zap', 'icon-sm') %> 100% free · learn at your own pace</span>
+      <h1>Learn to code with <span class="gradient-text"><%= siteName %></span></h1>
+      <p class="lead">
+        Not sure which course to take? We've got you covered. Browse beginner-friendly video courses
+        and in-depth tutorials on Python, JavaScript, web development and more.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="/courses">Explore courses <%- icon('arrow-right') %></a>
+        <a class="btn btn-secondary btn-lg" href="/tutorials">Read tutorials</a>
+      </div>
+      <dl class="hero-stats">
+        <div><dt>Courses</dt><dd><%= stats.courses %></dd></div>
+        <div><dt>Lessons</dt><dd><%= stats.lessons %></dd></div>
+        <div><dt>Tutorials</dt><dd><%= stats.tutorials %></dd></div>
+        <div><dt>Learners</dt><dd><%= stats.learners %></dd></div>
+      </dl>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="code-window">
+        <div class="code-window-bar"><span></span><span></span><span></span><em>hello.py</em></div>
+<pre><code><span class="hljs-keyword">def</span> <span class="hljs-title function_">greet</span>(<span class="hljs-params">name</span>):
+    <span class="hljs-keyword">return</span> <span class="hljs-string">f"Hello, <span class="hljs-subst">{name}</span>!"</span>
+
+skills = [<span class="hljs-string">"Python"</span>, <span class="hljs-string">"JavaScript"</span>, <span class="hljs-string">"HTML"</span>]
+<span class="hljs-keyword">for</span> skill <span class="hljs-keyword">in</span> skills:
+    <span class="hljs-built_in">print</span>(greet(skill))
+
+<span class="hljs-comment"># Hello, Python!</span>
+<span class="hljs-comment"># Hello, JavaScript!</span>
+<span class="hljs-comment"># Hello, HTML!</span></code></pre>
+      </div>
+      <div class="floating-card floating-card-a"><%- icon('check-circle') %> Lesson completed</div>
+      <div class="floating-card floating-card-b"><%- icon('trophy') %> Course progress 75%</div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Recommended courses</h2>
+        <p class="muted">Hand-picked courses to kick-start your journey.</p>
+      </div>
+      <a class="btn btn-ghost" href="/courses">View all <%- icon('arrow-right') %></a>
+    </div>
+    <% if (featured.length) { %>
+      <div class="card-grid">
+        <% featured.forEach(function (course) { %><%- include('../partials/course-card', { course }) %><% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <%- icon('cap', 'icon-xl') %>
+        <h3>No courses yet</h3>
+        <p class="muted">Courses you publish from the admin dashboard will appear here.</p>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Tutorials</h2>
+        <p class="muted">Step-by-step written guides you can read anywhere.</p>
+      </div>
+      <a class="btn btn-ghost" href="/tutorials">All tutorials <%- icon('arrow-right') %></a>
+    </div>
+    <% if (tutorials.length) { %>
+      <div class="tutorial-grid">
+        <% tutorials.forEach(function (tutorial) { %><%- include('../partials/tutorial-card', { tutorial }) %><% }) %>
+      </div>
+    <% } else { %>
+      <p class="muted">No tutorials published yet.</p>
+    <% } %>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container features">
+    <div class="feature">
+      <span class="feature-icon"><%- icon('play-circle') %></span>
+      <h3>Video lessons</h3>
+      <p class="muted">Short, focused videos with notes and source code for every lesson.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-icon"><%- icon('check-circle') %></span>
+      <h3>Track your progress</h3>
+      <p class="muted">Mark lessons complete and pick up exactly where you left off.</p>
+    </div>
+    <div class="feature">
+      <span class="feature-icon"><%- icon('book') %></span>
+      <h3>Written tutorials</h3>
+      <p class="muted">Bite-sized chapters with copy-ready code examples.</p>
+    </div>
+  </div>
+</section>
+
+<% if (!locals.currentUser && allowSignup) { %>
+<section class="section">
+  <div class="container">
+    <div class="cta">
+      <div>
+        <h2>Start learning today. It's free.</h2>
+        <p>Create an account to enroll in courses and track your progress.</p>
+      </div>
+      <a class="btn btn-light btn-lg" href="/signup">Create free account</a>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<%- include('../partials/footer') %>

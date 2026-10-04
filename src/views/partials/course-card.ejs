@@ -1,0 +1,18 @@
+<article class="card course-card">
+  <a class="course-thumb" href="/courses/<%= course.slug %>" tabindex="-1" aria-hidden="true">
+    <%- include('course-thumb', { course }) %>
+    <% if (!course.is_published) { %><span class="badge badge-warning thumb-badge">Draft</span><% } %>
+  </a>
+  <div class="card-body">
+    <div class="chip-row">
+      <span class="chip"><%= course.category %></span>
+      <span class="chip chip-<%= course.level.toLowerCase() %>"><%- icon('signal', 'icon-xs') %> <%= course.level %></span>
+    </div>
+    <h3 class="card-title"><a href="/courses/<%= course.slug %>"><%= course.title %></a></h3>
+    <p class="card-text"><%= truncate(course.summary, 120) %></p>
+    <div class="card-meta">
+      <span><%- icon('play-circle', 'icon-sm') %> <%= pluralize(course.lesson_count, 'lesson') %></span>
+      <span><%- icon('users', 'icon-sm') %> <%= pluralize(course.enrollment_count, 'learner') %></span>
+    </div>
+  </div>
+</article>

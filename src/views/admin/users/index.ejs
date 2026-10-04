@@ -1,0 +1,84 @@
+<%- include('../partials/header') %>
+<%
+  function pageUrl(p) {
+    const params = new URLSearchParams();
+    if (filters.q) params.set('q', filters.q);
+    if (filters.role) params.set('role', filters.role);
+    if (filters.status) params.set('status', filters.status);
+    if (p > 1) params.set('page', p);
+    const qs = params.toString();
+    return '/admin/users' + (qs ? '?' + qs : '');
+  }
+%>
+
+<div class="admin-page-head">
+  <div>
+    <h1>Users</h1>
+    <p class="muted"><%= pluralize(total, 'user') %><%= filters.q || filters.role || filters.status ? ' match your filters' : ' in total' %>.</p>
+  </div>
+  <div class="admin-page-actions">
+    <a class="btn btn-primary" href="/admin/users/new"><%- icon('plus') %> Add user</a>
+  </div>
+</div>
+
+<form class="filter-bar" method="get" action="/admin/users">
+  <div class="input-icon">
+    <%- icon('search') %>
+    <input class="input" type="search" name="q" value="<%= filters.q %>" placeholder="Name or email" aria-label="Search users">
+  </div>
+  <select class="input" name="role" aria-label="Role">
+    <option value="">All roles</option>
+    <option value="student" <%= filters.role === 'student' ? 'selected' : '' %>>Students</option>
+    <option value="admin" <%= filters.role === 'admin' ? 'selected' : '' %>>Admins</option>
+  </select>
+  <select class="input" name="status" aria-label="Status">
+    <option value="">Any status</option>
+    <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+    <option value="banned" <%= filters.status === 'banned' ? 'selected' : '' %>>Banned</option>
+  </select>
+  <button class="btn btn-secondary" type="submit">Filter</button>
+  <% if (filters.q || filters.role || filters.status) { %><a class="btn btn-ghost" href="/admin/users">Clear</a><% } %>
+</form>
+
+<% if (rows.length) { %>
+  <div class="card table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>User</th><th>Role</th><th>Status</th><th class="num">Courses</th><th>Joined</th><th>Last sign-in</th><th class="actions-col"><span class="sr-only">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        <% rows.forEach(function (user) { %>
+          <tr>
+            <td>
+              <a class="user-cell" href="/admin/users/<%= user.id %>">
+                <%- include('../../partials/avatar', { user, size: 'sm' }) %>
+                <span><strong><%= user.name %><% if (user.id === currentUser.id) { %> <span class="muted">(you)</span><% } %></strong><span class="muted small"><%= user.email %></span></span>
+              </a>
+            </td>
+            <td><span class="badge <%= user.role === 'admin' ? 'badge-primary' : '' %>"><%= user.role === 'admin' ? 'Admin' : 'Student' %></span></td>
+            <td><span class="badge <%= user.status === 'active' ? 'badge-success' : 'badge-danger' %>"><%= user.status === 'active' ? 'Active' : 'Banned' %></span></td>
+            <td class="num"><%= user.enrollment_count %></td>
+            <td class="muted small nowrap"><%= formatDate(user.created_at) %></td>
+            <td class="muted small nowrap"><%= timeAgo(user.last_login_at) %></td>
+            <td class="actions-col"><a class="btn btn-secondary btn-sm" href="/admin/users/<%= user.id %>">Manage</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (pages > 1) { %>
+    <nav class="pagination" aria-label="Pagination">
+      <% if (page > 1) { %><a class="btn btn-secondary btn-sm" href="<%= pageUrl(page - 1) %>"><%- icon('chevron-left', 'icon-sm') %> Previous</a><% } %>
+      <span class="muted small">Page <%= page %> of <%= pages %></span>
+      <% if (page < pages) { %><a class="btn btn-secondary btn-sm" href="<%= pageUrl(page + 1) %>">Next <%- icon('chevron-right', 'icon-sm') %></a><% } %>
+    </nav>
+  <% } %>
+<% } else { %>
+  <div class="empty-state card">
+    <%- icon('users', 'icon-xl') %>
+    <h3>No users found</h3>
+    <p class="muted">Try a different search or clear the filters.</p>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>
